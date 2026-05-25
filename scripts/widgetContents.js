@@ -687,8 +687,72 @@ class StocksWidgetContent extends WidgetContent {
     }
 }
 
+class NoteWidgetContent extends WidgetContent {
+
+    static style = `
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        box-sizing: border-box;
+    `
+
+    static textareaStyle = `
+        width: 100%;
+        height: 100%;
+        background: transparent;
+        border: none;
+        outline: none;
+        color: inherit;
+        font-family: inherit;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        resize: none;
+        box-sizing: border-box;
+        padding: 0.5rem;
+    `
+
+    constructor(widgetId) {
+        super(widgetId);
+        this._content = "Note Widget Content";
+        if (!widgetId) return;
+        const widget = Widget.allWidgets.find(w => w.id === widgetId);
+        if (widget) {
+            if (widget.data.text === undefined) widget.data.text = "";
+            this._text = widget.data.text;
+        }
+    }
+
+    toString() {
+        if (!this._widgetId) {
+            return `<div style="${NoteWidgetContent.style}">
+                <textarea style="${NoteWidgetContent.textareaStyle}" placeholder="Type your notes here..." disabled>Sample note text...</textarea>
+            </div>`;
+        }
+        const text = this._text || "";
+        return `<div style="${NoteWidgetContent.style}">
+            <textarea id="${this._widgetId}-note-textarea" style="${NoteWidgetContent.textareaStyle}" placeholder="Type your notes here...">${text}</textarea>
+        </div>`;
+    }
+
+    _update() {
+        const textarea = document.getElementById(this._widgetId + "-note-textarea");
+        if (!textarea) return true;
+        textarea.addEventListener("mousedown", e => e.stopPropagation());
+        textarea.addEventListener("input", () => {
+            const widget = Widget.allWidgets.find(w => w.id === this._widgetId);
+            if (widget) {
+                widget.data.text = textarea.value;
+                Widget.saveWidgets();
+            }
+        });
+        return false;
+    }
+}
+
 allWidgetContents.push(ClockWidgetContent);
 allWidgetContents.push(SearchBarWidgetContent);
 allWidgetContents.push(BookmarkBarWidgetContent);
 allWidgetContents.push(WeatherWidgetContent);
 allWidgetContents.push(StocksWidgetContent);
+allWidgetContents.push(NoteWidgetContent);
