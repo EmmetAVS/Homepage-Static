@@ -219,16 +219,27 @@ class Widget {
     }
 
     static loadWidgets() {
-        Widget._startup();
         const widgetData = localStorage.getItem("widgets");
         Widget.headerVisible = (localStorage.getItem("widgetHeaderVisible") === "true");
+
+        let widgets = [];
         if (widgetData) {
             try {
+                widgets = JSON.parse(widgetData);
+            } catch (error) {
+                console.error('Error parsing widget data:', error);
+                Widget._startup();
+                return;
+            }
+        }
 
+        Widget._startup();
+
+        if (widgets.length > 0) {
+            try {
                 const originalHeight = localStorage.getItem("expectedWindowHeight") || window.innerHeight;
                 const originalWidth = localStorage.getItem("expectedWindowWidth") || window.innerWidth;
 
-                const widgets = JSON.parse(widgetData);
                 console.log('Loading widgets:', widgets);
                 for (const widgetJSON of widgets) {
                     const widget = new Widget();
@@ -255,7 +266,7 @@ class Widget {
                 localStorage.setItem("expectedWindowWidth", originalWidth);
                 Widget.handleWindowResize();
                 Widget.saveWidgets();
-                
+
             } catch (error) {
                 console.error('Error loading widgets:', error);
             }

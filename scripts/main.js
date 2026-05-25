@@ -94,10 +94,21 @@ function importSerializedData(b64) {
         const json = LZString.decompressFromBase64(b64);
         const data = JSON.parse(json);
         const obj = Object.entries(data);
+
+        const backup = {};
+        for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i);
+            backup[k] = localStorage.getItem(k);
+        }
+
         localStorage.clear();
 
         for (const [key, value] of obj) {
             localStorage.setItem(key, value);
+        }
+
+        if (!localStorage.getItem("widgets") && backup["widgets"]) {
+            localStorage.setItem("widgets", backup["widgets"]);
         }
 
         console.log("Expected window size:", localStorage.getItem("expectedWindowWidth"), "x", localStorage.getItem("expectedWindowHeight"));
